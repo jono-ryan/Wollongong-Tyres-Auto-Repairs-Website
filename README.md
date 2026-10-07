@@ -23,6 +23,7 @@ assets/           logo images
 ## Demo mode (current)
 
 The site is hosted under the developer's accounts as a preview. It is hidden from Google by the `noindex` tag in `index.html` and by `robots.txt`.
+Booking requests currently go to the developer's demo Formspree form (`formEndpoint` in `js/main.js`). Opening hours and the 30-minute drop-off slots are set in `CONFIG.hours` in the same file.
 **At handover:** delete both, point the form at Bilal's own Formspree form, and move hosting, code and domain into his accounts (see "Handover to the owner").
 
 ## Going live (about 1 hour, $0–$25/yr)

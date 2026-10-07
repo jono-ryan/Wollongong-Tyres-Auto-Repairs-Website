@@ -275,12 +275,9 @@
             <input type="date" id="date" name="date" required>
           </div>
           <div class="form__row">
-            <label for="time">Drop-off time</label>
-            <select id="time" name="time" required>
-              <option value="">Select…</option>
-              <option>8:00am</option><option>9:00am</option><option>10:00am</option>
-              <option>11:00am</option><option>12:00pm</option><option>1:00pm</option>
-              <option>2:00pm</option><option>3:00pm</option>
+            <label for="time">Drop-off time (30-min slots)</label>
+            <select id="time" name="time" required disabled>
+              <option value="">Pick a day first</option>
             </select>
           </div>
         </div>
@@ -310,7 +307,7 @@
         </div>
         <input type="hidden" name="offer" id="offer">
         <p class="form__error" id="form-error" role="alert" hidden>Please fill in the highlighted fields.</p>
-        <button type="submit" class="btn btn--primary btn--block btn--lg">Request booking</button>
+        <button type="submit" class="btn btn--primary btn--block btn--lg" id="submit-btn">Request booking</button>
         <p class="form__note">No payment needed now. We'll confirm your time by text.</p>
 
         <div class="form__success" id="form-success" hidden>
