@@ -1,0 +1,26 @@
+{
+  "timezone": "Australia/Sydney",
+  "hours": {
+    "sun": null,
+    "mon": ["08:00", "17:00"],
+    "tue": ["08:00", "17:00"],
+    "wed": ["08:00", "17:00"],
+    "thu": ["08:00", "17:00"],
+    "fri": ["08:00", "17:00"],
+    "sat": ["08:00", "17:00"]
+  },
+  "slotMinutes": 30,
+  "minNoticeMinutes": 60,
+  "daysAhead": 14,
+  "services": [
+    { "name": "Logbook Service", "minutes": 120, "price": "from $229" },
+    { "name": "Standard Service", "minutes": 90, "price": "from $159" },
+    { "name": "e-Safety Check (Pink Slip)", "minutes": 30, "price": "$45" },
+    { "name": "Service + e-Safety Check combo", "minutes": 120, "price": "save $20" },
+    { "name": "Tyres", "minutes": 60, "price": "from $99/tyre" },
+    { "name": "Brake Service", "minutes": 90, "price": "from $189" },
+    { "name": "Wheel Alignment", "minutes": 60, "price": "from $89" },
+    { "name": "Suspension / Inspection", "minutes": 60, "price": "quote" }
+  ],
+  "formspreeEndpoint": "https://formspree.io/f/mkjojzly"
+}

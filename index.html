@@ -239,11 +239,11 @@
       <div class="book__info">
         <p class="eyebrow">Book online</p>
         <h2>Book your car in</h2>
-        <p>Pick a service and a time that suits you. We'll text you to confirm — usually within the hour during opening times.</p>
+        <p>See our real availability and lock in a time in under a minute. No phone tag.</p>
         <ul class="steps">
           <li><span>1</span>Choose your service</li>
-          <li><span>2</span>Pick a day &amp; time</li>
-          <li><span>3</span>We confirm by text</li>
+          <li><span>2</span>Pick a free time</li>
+          <li><span>3</span>Add your details. You're booked in</li>
         </ul>
         <div class="hours">
           <h3>Opening hours</h3>
@@ -253,70 +253,78 @@
         <p class="book__call">Prefer to talk? <a href="tel:0410448683">Call Bilal on 0410 448 683</a></p>
       </div>
 
-      <form class="form" id="booking-form" novalidate>
-        <div class="form__row">
-          <label for="service">Service</label>
-          <select id="service" name="service" required>
-            <option value="">Select a service…</option>
-            <option>Logbook Service</option>
-            <option>Standard Service</option>
-            <option>e-Safety Check (Pink Slip)</option>
-            <option>Service + e-Safety Check combo</option>
-            <option>Tyres</option>
-            <option>Brake Service</option>
-            <option>Wheel Alignment</option>
-            <option>Suspension</option>
-            <option>Something else / not sure</option>
-          </select>
-        </div>
-        <div class="form__grid">
-          <div class="form__row">
-            <label for="date">Preferred day</label>
-            <input type="date" id="date" name="date" required>
-          </div>
-          <div class="form__row">
-            <label for="time">Drop-off time (30-min slots)</label>
-            <select id="time" name="time" required disabled>
-              <option value="">Pick a day first</option>
-            </select>
-          </div>
-        </div>
-        <div class="form__grid">
-          <div class="form__row">
-            <label for="name">Your name</label>
-            <input type="text" id="name" name="name" autocomplete="name" required>
-          </div>
-          <div class="form__row">
-            <label for="phone">Mobile</label>
-            <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="04xx xxx xxx" required>
-          </div>
-        </div>
-        <div class="form__grid">
-          <div class="form__row">
-            <label for="rego">Rego (optional)</label>
-            <input type="text" id="rego" name="rego" placeholder="e.g. ABC12D">
-          </div>
-          <div class="form__row">
-            <label for="vehicle">Make &amp; model</label>
-            <input type="text" id="vehicle" name="vehicle" placeholder="e.g. 2019 Toyota Corolla" required>
-          </div>
-        </div>
-        <div class="form__row">
-          <label for="notes">Anything we should know?</label>
-          <textarea id="notes" name="notes" rows="3" placeholder="Noises, warning lights, offer code…"></textarea>
-        </div>
-        <input type="hidden" name="offer" id="offer">
-        <p class="form__error" id="form-error" role="alert" hidden>Please fill in the highlighted fields.</p>
-        <button type="submit" class="btn btn--primary btn--block btn--lg" id="submit-btn">Request booking</button>
-        <p class="form__note">No payment needed now. We'll confirm your time by text.</p>
+      <div class="booker" id="booker">
+        <ol class="booker__progress" aria-label="Booking steps">
+          <li data-progress="1" class="is-active">Service</li>
+          <li data-progress="2">Time</li>
+          <li data-progress="3">Details</li>
+        </ol>
 
-        <div class="form__success" id="form-success" hidden>
-          <div class="form__tick">✓</div>
-          <h3>Booking request sent!</h3>
-          <p>Thanks <span id="success-name"></span> — we'll text you shortly to confirm your <strong id="success-service"></strong> booking.</p>
-          <a class="btn btn--dark" id="sms-fallback" href="#">Or text us the details now</a>
+        <!-- Step 1: service -->
+        <div class="booker__step" data-step="1">
+          <h3 class="booker__title">What does your car need?</h3>
+          <div class="svc-grid" id="svc-grid"></div>
         </div>
-      </form>
+
+        <!-- Step 2: day + time -->
+        <div class="booker__step" data-step="2" hidden>
+          <button type="button" class="booker__back" data-go="1">← <span id="chosen-service"></span></button>
+          <h3 class="booker__title">Pick a time</h3>
+          <div class="day-strip" id="day-strip" role="listbox" aria-label="Day"></div>
+          <div class="slot-grid" id="slot-grid" aria-live="polite"></div>
+          <p class="booker__notice" id="slot-notice" hidden></p>
+          <p class="booker__demo" id="demo-note" hidden>Demo mode: sample availability shown until the workshop calendar is connected.</p>
+        </div>
+
+        <!-- Step 3: details -->
+        <form class="booker__step" data-step="3" id="details-form" novalidate hidden>
+          <button type="button" class="booker__back" data-go="2">← Change time</button>
+          <div class="summary">
+            <div>
+              <strong id="sum-service"></strong>
+              <span id="sum-when"></span>
+            </div>
+            <span class="summary__offer" id="sum-offer" hidden></span>
+          </div>
+          <div class="form__grid">
+            <div class="form__row">
+              <label for="name">Your name</label>
+              <input type="text" id="name" name="name" autocomplete="name" required>
+            </div>
+            <div class="form__row">
+              <label for="phone">Mobile</label>
+              <input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="04xx xxx xxx" required>
+            </div>
+          </div>
+          <div class="form__grid form__grid--car">
+            <div class="form__row">
+              <label for="vehicle">Car make &amp; model</label>
+              <input type="text" id="vehicle" name="vehicle" placeholder="e.g. 2019 Toyota Corolla" required>
+            </div>
+            <div class="form__row">
+              <label for="rego">Rego <small>(optional)</small></label>
+              <input type="text" id="rego" name="rego" placeholder="ABC12D" autocapitalize="characters">
+            </div>
+          </div>
+          <details class="form__more">
+            <summary>+ Add a note (warning lights, noises…)</summary>
+            <textarea id="notes" name="notes" rows="3" maxlength="500"></textarea>
+          </details>
+          <input type="text" name="company" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <p class="form__error" id="form-error" role="alert" hidden></p>
+          <button type="submit" class="btn btn--primary btn--block btn--lg" id="submit-btn">Confirm booking</button>
+          <p class="form__note">No payment needed now. Pay when you pick up your car.</p>
+        </form>
+
+        <!-- Step 4: done -->
+        <div class="booker__step booker__done" data-step="4" hidden>
+          <div class="form__tick">✓</div>
+          <h3>You're booked in!</h3>
+          <p><strong id="done-service"></strong><br><span id="done-when"></span></p>
+          <p class="booker__muted">505 Crown Street, Wollongong. Need to change it? Call or text 0410 448 683.</p>
+          <a class="btn btn--dark" id="add-to-cal" target="_blank" rel="noopener">Add to my calendar</a>
+        </div>
+      </div>
     </div>
   </section>
 
