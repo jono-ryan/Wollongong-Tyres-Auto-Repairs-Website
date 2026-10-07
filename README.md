@@ -20,6 +20,11 @@ assets/           logo images
 - [x] **Reviews**: three real 5-star Google reviews are in place. Add new ones as they come in. Never publish made-up reviews; that is illegal under Australian Consumer Law.
 - [ ] Ask him for the **original logo file** (PNG/SVG from his designer). The current one is cleaned up from a screenshot.
 
+## Demo mode (current)
+
+The site is hosted under the developer's accounts as a preview. It is hidden from Google by the `noindex` tag in `index.html` and by `robots.txt`.
+**At handover:** delete both, point the form at Bilal's own Formspree form, and move hosting, code and domain into his accounts (see "Handover to the owner").
+
 ## Going live (about 1 hour, $0–$25/yr)
 
 1. **Hosting (free):** sign up at [Netlify](https://app.netlify.com/drop) and drag this folder onto the "Drop" page. You get a live URL straight away. Cloudflare Pages and GitHub Pages also work and are free.

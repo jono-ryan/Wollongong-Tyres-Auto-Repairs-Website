@@ -1,0 +1,3 @@
+# DEMO ONLY: delete this file at handover
+User-agent: *
+Disallow: /
