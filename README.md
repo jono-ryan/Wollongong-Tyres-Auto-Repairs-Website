@@ -17,7 +17,7 @@ assets/           logo images
 
 - [ ] **Prices** in `index.html` (search for `price`) are *estimates* for Wollongong. Confirm the real ones with him.
 - [ ] **Offers**: confirm he's happy to run each one, or change/remove them.
-- [ ] **Reviews**: the three reviews are marked "Sample review". Swap them for his real Google reviews before launch. Never publish made-up reviews; that's illegal under Australian Consumer Law.
+- [x] **Reviews**: three real 5-star Google reviews are in place. Add new ones as they come in. Never publish made-up reviews; that is illegal under Australian Consumer Law.
 - [ ] Ask him for the **original logo file** (PNG/SVG from his designer). The current one is cleaned up from a screenshot.
 
 ## Going live (about 1 hour, $0–$25/yr)
