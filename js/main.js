@@ -165,21 +165,10 @@ function renderCalendar() {
     }
     cell.append(num);
 
-    let tag = "";
-    if (free) tag = `${free} time${free > 1 ? "s" : ""}`;
-    else if (ymd === state.today) tag = "Call us";
-    else if (weekday(ymd) === 0) tag = "Closed";
-    else if (info) tag = "Full";
-    if (tag) {
-      const t = document.createElement("span");
-      t.className = "cal__tag" + (free ? " is-free" : "");
-      t.textContent = tag;
-      cell.append(t);
-    }
-
     cell.disabled = !free;
     if (free) cell.classList.add("is-free");
-    cell.setAttribute("aria-label", `${dayLabel(ymd, { weekday: "long", day: "numeric", month: "long" })}: ${tag || "unavailable"}`);
+    const status = free ? "available" : ymd === state.today ? "same day, please call" : "unavailable";
+    cell.setAttribute("aria-label", `${dayLabel(ymd, { weekday: "long", day: "numeric", month: "long" })}, ${status}`);
     cell.addEventListener("click", () => showDay(ymd));
     grid.append(cell);
   }
