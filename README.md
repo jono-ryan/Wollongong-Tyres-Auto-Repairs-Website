@@ -14,7 +14,7 @@ assets/                    logo images
 
 ## Online booking (live Google Calendar)
 
-Customers book in 3 steps: **service → day on a month calendar, then a free time → name, mobile, car, notes**.
+Customers book in 2 steps: **(1) pick a day on an Apple-style month calendar, then a free time** (a "Booking for" dropdown at the top sets the service, which sets how long the job blocks) **→ (2) name, mobile, car, notes**.
 
 - No same-day online bookings (`sameDayBookings: false`); customers are told to call. Bookings open from tomorrow to `daysAhead` days out.
 

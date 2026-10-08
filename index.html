@@ -241,9 +241,9 @@
         <h2>Book your car in</h2>
         <p>See our real availability and lock in a time in under a minute. No phone tag.</p>
         <ul class="steps">
-          <li><span>1</span>Choose your service</li>
-          <li><span>2</span>Pick a free time</li>
-          <li><span>3</span>Add your details. You're booked in</li>
+          <li><span>1</span>Pick a free day &amp; time</li>
+          <li><span>2</span>Add your details</li>
+          <li><span>3</span>You're booked in</li>
         </ul>
         <div class="hours">
           <h3>Opening hours</h3>
@@ -255,45 +255,50 @@
 
       <div class="booker" id="booker">
         <ol class="booker__progress" aria-label="Booking steps">
-          <li data-progress="1" class="is-active">Service</li>
-          <li data-progress="2">Time</li>
-          <li data-progress="3">Details</li>
+          <li data-progress="1" class="is-active">Day &amp; time</li>
+          <li data-progress="2">Your details</li>
         </ol>
 
-        <!-- Step 1: service -->
+        <!-- Step 1: service picker + calendar (month view -> day view) -->
         <div class="booker__step" data-step="1">
-          <h3 class="booker__title">What does your car need?</h3>
-          <div class="svc-grid" id="svc-grid"></div>
-        </div>
+          <label class="svc-pick">
+            <span>Booking for</span>
+            <select id="svc-select" aria-label="Service"></select>
+          </label>
 
-        <!-- Step 2: day + time -->
-        <div class="booker__step" data-step="2" hidden>
-          <button type="button" class="booker__back" data-go="1">← <span id="chosen-service"></span></button>
-          <h3 class="booker__title">Pick a day</h3>
-          <div class="cal">
-            <div class="cal__head">
-              <button type="button" class="cal__nav" id="cal-prev" aria-label="Previous month">‹</button>
-              <strong id="cal-month"></strong>
-              <button type="button" class="cal__nav" id="cal-next" aria-label="Next month">›</button>
+          <div class="cal" id="cal">
+            <!-- Month view -->
+            <div class="cal__view" id="month-view">
+              <div class="cal__head">
+                <h3 class="cal__title" id="cal-month"></h3>
+                <div class="cal__navs">
+                  <button type="button" class="cal__nav" id="cal-prev" aria-label="Previous month">‹</button>
+                  <button type="button" class="cal__today" id="cal-today">Today</button>
+                  <button type="button" class="cal__nav" id="cal-next" aria-label="Next month">›</button>
+                </div>
+              </div>
+              <div class="cal__grid" id="cal-grid"></div>
             </div>
-            <div class="cal__grid" id="cal-grid"></div>
-            <div class="cal__legend">
-              <span><i class="dot dot--free"></i>Available</span>
-              <span><i class="dot dot--off"></i>Unavailable</span>
+
+            <!-- Day view -->
+            <div class="cal__view" id="day-view" hidden>
+              <div class="cal__head">
+                <button type="button" class="cal__back" id="day-back">‹ <span id="day-back-month"></span></button>
+              </div>
+              <h3 class="cal__title cal__title--day" id="day-title"></h3>
+              <p class="cal__daysub" id="day-sub"></p>
+              <div class="slot-grid" id="slot-grid" aria-live="polite"></div>
             </div>
           </div>
+
           <p class="cal__sameday">Need your car looked at today? <a href="tel:0410448683">Call 0410 448 683</a></p>
-          <div class="slot-wrap" id="slot-wrap" hidden>
-            <p class="slot-heading" id="slot-heading"></p>
-            <div class="slot-grid" id="slot-grid" aria-live="polite"></div>
-          </div>
           <p class="booker__notice" id="slot-notice" hidden></p>
           <p class="booker__demo" id="demo-note" hidden>Demo mode: sample availability shown until the workshop calendar is connected.</p>
         </div>
 
-        <!-- Step 3: details -->
-        <form class="booker__step" data-step="3" id="details-form" novalidate hidden>
-          <button type="button" class="booker__back" data-go="2">← Change time</button>
+        <!-- Step 2: details -->
+        <form class="booker__step" data-step="2" id="details-form" novalidate hidden>
+          <button type="button" class="booker__back" data-go="1">← Change time</button>
           <div class="summary">
             <div>
               <strong id="sum-service"></strong>
@@ -331,8 +336,8 @@
           <p class="form__note">No payment needed now. Pay when you pick up your car.</p>
         </form>
 
-        <!-- Step 4: done -->
-        <div class="booker__step booker__done" data-step="4" hidden>
+        <!-- Done -->
+        <div class="booker__step booker__done" data-step="3" hidden>
           <div class="form__tick">✓</div>
           <h3>You're booked in!</h3>
           <p><strong id="done-service"></strong><br><span id="done-when"></span></p>

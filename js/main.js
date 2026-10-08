@@ -22,7 +22,7 @@ const API = "/.netlify/functions";
 const SHOP_ADDRESS = "505 Crown Street, Wollongong NSW 2500";
 
 const $ = (id) => document.getElementById(id);
-const state = { services: [], service: null, days: [], today: null, month: null, date: null, time: null, offer: "" };
+const state = { step: 1, services: [], service: null, days: [], today: null, month: null, date: null, time: null, offer: "" };
 
 const dayLabel = (ymd, opts) =>
   new Date(ymd + "T00:00:00Z").toLocaleDateString("en-AU", { timeZone: "UTC", ...opts });
@@ -33,6 +33,8 @@ const timeLabel = (hhmm) => {
 const durationLabel = (mins) => (mins < 60 ? `${mins} min` : `${+(mins / 60).toFixed(1)} hr${mins > 60 ? "s" : ""}`);
 
 function go(step) {
+  if (state.step === step) return;
+  state.step = step;
   document.querySelectorAll(".booker__step").forEach((el) => (el.hidden = el.dataset.step !== String(step)));
   document.querySelectorAll("[data-progress]").forEach((el) => {
     el.classList.toggle("is-active", +el.dataset.progress === step);
@@ -43,39 +45,7 @@ function go(step) {
 }
 document.querySelectorAll("[data-go]").forEach((btn) => btn.addEventListener("click", () => go(+btn.dataset.go)));
 
-// Step 1: services
-async function loadServices() {
-  try {
-    const res = await fetch("booking-config.json");
-    state.services = (await res.json()).services;
-  } catch {
-    $("svc-grid").innerHTML = `<p class="booker__notice">Online booking is unavailable right now. Please call <a href="tel:0410448683">0410 448 683</a>.</p>`;
-    return;
-  }
-  $("svc-grid").innerHTML = "";
-  state.services.forEach((svc) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "svc";
-    btn.innerHTML = `<strong></strong><span></span>`;
-    btn.querySelector("strong").textContent = svc.name;
-    btn.querySelector("span").textContent = `${svc.price} · ${durationLabel(svc.minutes)}`;
-    btn.addEventListener("click", () => chooseService(svc.name));
-    $("svc-grid").append(btn);
-  });
-}
-
-function chooseService(name) {
-  const svc = state.services.find((s) => s.name === name);
-  if (!svc) return;
-  state.service = svc;
-  state.time = null;
-  $("chosen-service").textContent = svc.name;
-  go(2);
-  loadAvailability();
-}
-
-// Step 2: month calendar + times
+// Step 1: service picker + calendar
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const monthOf = (ymd) => ymd.slice(0, 7);
 const shiftMonth = (ym, n) => {
@@ -83,10 +53,43 @@ const shiftMonth = (ym, n) => {
   const d = new Date(Date.UTC(y, m - 1 + n, 1));
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 };
+const addDaysYmd = (ymd, n) => {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+};
+const weekday = (ymd) => new Date(ymd + "T00:00:00Z").getUTCDay();
+
+async function loadServices() {
+  try {
+    const res = await fetch("booking-config.json");
+    state.services = (await res.json()).services;
+  } catch {
+    $("cal").hidden = true;
+    notice(`Online booking is unavailable right now. Please call <a href="tel:0410448683">0410 448 683</a>.`);
+    return;
+  }
+  $("svc-select").innerHTML = "";
+  state.services.forEach((svc) =>
+    $("svc-select").add(new Option(`${svc.name} · ${svc.price} · ${durationLabel(svc.minutes)}`, svc.name))
+  );
+  chooseService(state.services[0].name);
+}
+
+$("svc-select").addEventListener("change", (e) => chooseService(e.target.value));
+
+function chooseService(name) {
+  const svc = state.services.find((s) => s.name === name);
+  if (!svc) return;
+  state.service = svc;
+  state.time = null;
+  $("svc-select").value = svc.name;
+  go(1);
+  loadAvailability(state.date);
+}
 
 async function loadAvailability(keepDate) {
+  showMonth();
   $("cal-grid").innerHTML = `<div class="cal__loading">Loading free times…</div>`;
-  $("slot-wrap").hidden = true;
   $("slot-notice").hidden = true;
   try {
     const res = await fetch(`${API}/availability?service=${encodeURIComponent(state.service.name)}`);
@@ -100,13 +103,13 @@ async function loadAvailability(keepDate) {
     notice(`Couldn't load times. Please refresh, or call <a href="tel:0410448683">0410 448 683</a>.`);
     return;
   }
-  const keep = keepDate && state.days.find((d) => d.date === keepDate && d.slots.length);
-  state.date = keep ? keepDate : null;
   const firstFree = state.days.find((d) => d.slots.length);
-  state.month = monthOf(state.date || firstFree?.date || state.days[0].date);
+  if (!state.month) state.month = monthOf(firstFree?.date || state.today);
   if (!firstFree) notice(`We're fully booked for the next few weeks. Please call <a href="tel:0410448683">0410 448 683</a>.`);
   renderCalendar();
-  renderSlots();
+  // Coming back after a clash, or after switching service: reopen that day if it still has times
+  const keep = keepDate && state.days.find((d) => d.date === keepDate && d.slots.length);
+  if (keep) showDay(keep.date);
 }
 
 function notice(html) {
@@ -116,53 +119,69 @@ function notice(html) {
 
 function renderCalendar() {
   const byDate = Object.fromEntries(state.days.map((d) => [d.date, d]));
-  const firstMonth = monthOf(state.days[0].date);
-  const lastMonth = monthOf(state.days[state.days.length - 1].date);
   const [y, m] = state.month.split("-").map(Number);
+  const firstMonth = monthOf(state.today);
+  const lastMonth = monthOf(state.days[state.days.length - 1].date);
 
-  $("cal-month").textContent = `${MONTHS[m - 1]} ${y}`;
+  $("cal-month").innerHTML = `<b>${MONTHS[m - 1]}</b> ${y}`;
   $("cal-prev").disabled = state.month <= firstMonth;
   $("cal-next").disabled = state.month >= lastMonth;
+  $("cal-today").disabled = state.month === firstMonth;
 
   const grid = $("cal-grid");
   grid.innerHTML = "";
-  ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach((d) => {
+  ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach((d, i) => {
     const el = document.createElement("div");
-    el.className = "cal__dow";
+    el.className = "cal__dow" + (i >= 5 ? " is-weekend" : "");
     el.textContent = d;
     grid.append(el);
   });
 
-  const lead = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7; // Monday-first
-  for (let i = 0; i < lead; i++) grid.append(document.createElement("div"));
+  // Whole weeks, Monday first, including greyed days from the months either side
+  const first = `${state.month}-01`;
+  const start = addDaysYmd(first, -((weekday(first) + 6) % 7));
+  const lastOfMonth = `${state.month}-${String(new Date(Date.UTC(y, m, 0)).getUTCDate()).padStart(2, "0")}`;
+  const end = addDaysYmd(lastOfMonth, (7 - weekday(lastOfMonth)) % 7);
 
-  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
-  for (let d = 1; d <= daysInMonth; d++) {
-    const ymd = `${state.month}-${String(d).padStart(2, "0")}`;
+  for (let ymd = start; ymd <= end; ymd = addDaysYmd(ymd, 1)) {
     const info = byDate[ymd];
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "cal__day";
-    btn.textContent = d;
-    const free = info && info.slots.length > 0;
-    btn.disabled = !free;
-    if (ymd === state.today) {
-      btn.classList.add("is-today");
-      btn.title = "Same-day bookings: please call";
-    } else if (info && !free && new Date(ymd + "T00:00:00Z").getUTCDay() !== 0) {
-      btn.classList.add("is-full");
-      btn.title = "Fully booked";
+    const free = info?.slots.length || 0;
+    const cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = "cal__cell";
+    if (monthOf(ymd) !== state.month) cell.classList.add("is-other");
+    if (weekday(ymd) === 0 || weekday(ymd) === 6) cell.classList.add("is-weekend");
+    if (ymd === state.today) cell.classList.add("is-today");
+
+    const day = +ymd.slice(8);
+    const num = document.createElement("span");
+    num.className = "cal__num";
+    num.textContent = day;
+    if (day === 1) {
+      const mon = document.createElement("span");
+      mon.className = "cal__mon";
+      mon.textContent = ` ${MONTHS[+ymd.slice(5, 7) - 1].slice(0, 3)}`;
+      num.append(mon);
     }
-    if (free) btn.classList.add("is-free");
-    if (ymd === state.date) btn.classList.add("is-selected");
-    btn.setAttribute("aria-label", `${dayLabel(ymd, { weekday: "long", day: "numeric", month: "long" })}${free ? "" : ", unavailable"}`);
-    btn.addEventListener("click", () => {
-      state.date = ymd;
-      renderCalendar();
-      renderSlots();
-      $("slot-wrap").scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
-    grid.append(btn);
+    cell.append(num);
+
+    let tag = "";
+    if (free) tag = `${free} time${free > 1 ? "s" : ""}`;
+    else if (ymd === state.today) tag = "Call us";
+    else if (weekday(ymd) === 0) tag = "Closed";
+    else if (info) tag = "Full";
+    if (tag) {
+      const t = document.createElement("span");
+      t.className = "cal__tag" + (free ? " is-free" : "");
+      t.textContent = tag;
+      cell.append(t);
+    }
+
+    cell.disabled = !free;
+    if (free) cell.classList.add("is-free");
+    cell.setAttribute("aria-label", `${dayLabel(ymd, { weekday: "long", day: "numeric", month: "long" })}: ${tag || "unavailable"}`);
+    cell.addEventListener("click", () => showDay(ymd));
+    grid.append(cell);
   }
 }
 
@@ -174,18 +193,30 @@ $("cal-next").addEventListener("click", () => {
   state.month = shiftMonth(state.month, 1);
   renderCalendar();
 });
+$("cal-today").addEventListener("click", () => {
+  state.month = monthOf(state.today);
+  renderCalendar();
+});
+$("day-back").addEventListener("click", showMonth);
 
-function renderSlots() {
-  const day = state.days.find((d) => d.date === state.date);
-  $("slot-wrap").hidden = !day;
+function showMonth() {
+  $("month-view").hidden = false;
+  $("day-view").hidden = true;
+}
+
+function showDay(ymd) {
+  const day = state.days.find((d) => d.date === ymd);
   if (!day) return;
-  $("slot-heading").textContent = `Free times on ${dayLabel(day.date, { weekday: "long", day: "numeric", month: "long" })}`;
+  state.date = ymd;
+  state.month = monthOf(ymd);
+  $("day-back-month").textContent = MONTHS[+ymd.slice(5, 7) - 1];
+  $("day-title").innerHTML = `<b>${dayLabel(ymd, { weekday: "long" })}</b> ${dayLabel(ymd, { day: "numeric", month: "long" })}`;
+  $("day-sub").textContent = `${day.slots.length} free time${day.slots.length > 1 ? "s" : ""} for ${state.service.name} (${durationLabel(state.service.minutes)})`;
   $("slot-grid").innerHTML = "";
-  const groups = [
+  [
     ["Morning", day.slots.filter((t) => t < "12:00")],
     ["Afternoon", day.slots.filter((t) => t >= "12:00")],
-  ];
-  groups.forEach(([label, slots]) => {
+  ].forEach(([label, slots]) => {
     if (!slots.length) return;
     const heading = document.createElement("p");
     heading.className = "slot-group";
@@ -200,6 +231,8 @@ function renderSlots() {
       $("slot-grid").append(btn);
     });
   });
+  $("month-view").hidden = true;
+  $("day-view").hidden = false;
 }
 
 function chooseTime(t) {
@@ -209,7 +242,7 @@ function chooseTime(t) {
   $("sum-offer").hidden = !state.offer;
   $("sum-offer").textContent = state.offer ? `Offer ${state.offer} applied` : "";
   $("form-error").hidden = true;
-  go(3);
+  go(2);
   setTimeout(() => $("name").focus({ preventScroll: true }), 300);
 }
 
@@ -249,7 +282,7 @@ form.addEventListener("submit", async (e) => {
     });
     const data = await res.json().catch(() => ({}));
     if (res.status === 409) {
-      go(2);
+      go(1);
       await loadAvailability(state.date);
       notice("Sorry, someone just grabbed that time. Please pick another.");
       return;
@@ -279,7 +312,7 @@ function showDone(booking) {
     `&dates=${stamp(booking.start)}/${stamp(booking.end)}` +
     `&location=${encodeURIComponent(SHOP_ADDRESS)}` +
     `&details=${encodeURIComponent("Questions? Call 0410 448 683")}`;
-  go(4);
+  go(3);
 }
 
 const servicesReady = loadServices();
