@@ -10,10 +10,11 @@
     "sat": ["08:00", "17:00"]
   },
   "slotMinutes": 30,
+  "sameDayBookings": false,
   "minNoticeMinutes": 60,
-  "daysAhead": 14,
+  "daysAhead": 35,
   "services": [
-    { "name": "Logbook Service", "minutes": 120, "price": "from $229" },
+    { "name": "Logbook Service", "minutes": 120, "price": "$250" },
     { "name": "Standard Service", "minutes": 90, "price": "from $159" },
     { "name": "e-Safety Check (Pink Slip)", "minutes": 30, "price": "$45" },
     { "name": "Service + e-Safety Check combo", "minutes": 120, "price": "save $20" },

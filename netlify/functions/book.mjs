@@ -1,7 +1,7 @@
 // POST /.netlify/functions/book  { service, date, time, name, phone, vehicle, rego?, notes?, offer? }
 // Re-checks the slot is still free, adds it to Google Calendar and emails a notification via Formspree.
 import {
-  config, createEvent, findService, getAvailability, googleConfigured, json, zonedToDate,
+  addDays, config, createEvent, findService, firstBookableYmd, getAvailability, googleConfigured, json, zonedToDate,
 } from "../lib/booking.mjs";
 
 const clean = (v, max) => String(v ?? "").trim().slice(0, max);
@@ -34,6 +34,12 @@ export default async (req) => {
   }
   if (name.length < 2 || !/^[0-9 +()-]{8,20}$/.test(phone) || !vehicle) {
     return json({ error: "Please check your name, mobile and car details." }, 400);
+  }
+
+  const first = firstBookableYmd();
+  const last = addDays(first, config.daysAhead - 1);
+  if (date < first || date > last) {
+    return json({ error: "That day can't be booked online. Please call 0410 448 683." }, 400);
   }
 
   try {

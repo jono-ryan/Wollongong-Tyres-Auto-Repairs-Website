@@ -14,7 +14,9 @@ assets/                    logo images
 
 ## Online booking (live Google Calendar)
 
-Customers book in 3 steps: **service → free time → name, mobile, car**.
+Customers book in 3 steps: **service → day on a month calendar, then a free time → name, mobile, car, notes**.
+
+- No same-day online bookings (`sameDayBookings: false`); customers are told to call. Bookings open from tomorrow to `daysAhead` days out.
 
 - Free times = opening hours in `booking-config.json` minus anything already in the workshop's Google Calendar.
   Bilal can block time by adding any event to his calendar (e.g. "Busy", "Walk-in", "Closed").

@@ -122,7 +122,7 @@
         <article class="card card--featured">
           <span class="badge">Most popular</span>
           <h3>Logbook Service</h3>
-          <p class="price"><small>from</small> $229</p>
+          <p class="price">$250</p>
           <ul>
             <li>Done to manufacturer schedule</li>
             <li>Keeps your new-car warranty valid</li>
@@ -269,9 +269,24 @@
         <!-- Step 2: day + time -->
         <div class="booker__step" data-step="2" hidden>
           <button type="button" class="booker__back" data-go="1">← <span id="chosen-service"></span></button>
-          <h3 class="booker__title">Pick a time</h3>
-          <div class="day-strip" id="day-strip" role="listbox" aria-label="Day"></div>
-          <div class="slot-grid" id="slot-grid" aria-live="polite"></div>
+          <h3 class="booker__title">Pick a day</h3>
+          <div class="cal">
+            <div class="cal__head">
+              <button type="button" class="cal__nav" id="cal-prev" aria-label="Previous month">‹</button>
+              <strong id="cal-month"></strong>
+              <button type="button" class="cal__nav" id="cal-next" aria-label="Next month">›</button>
+            </div>
+            <div class="cal__grid" id="cal-grid"></div>
+            <div class="cal__legend">
+              <span><i class="dot dot--free"></i>Available</span>
+              <span><i class="dot dot--off"></i>Unavailable</span>
+            </div>
+          </div>
+          <p class="cal__sameday">Need your car looked at today? <a href="tel:0410448683">Call 0410 448 683</a></p>
+          <div class="slot-wrap" id="slot-wrap" hidden>
+            <p class="slot-heading" id="slot-heading"></p>
+            <div class="slot-grid" id="slot-grid" aria-live="polite"></div>
+          </div>
           <p class="booker__notice" id="slot-notice" hidden></p>
           <p class="booker__demo" id="demo-note" hidden>Demo mode: sample availability shown until the workshop calendar is connected.</p>
         </div>
@@ -306,10 +321,10 @@
               <input type="text" id="rego" name="rego" placeholder="ABC12D" autocapitalize="characters">
             </div>
           </div>
-          <details class="form__more">
-            <summary>+ Add a note (warning lights, noises…)</summary>
-            <textarea id="notes" name="notes" rows="3" maxlength="500"></textarea>
-          </details>
+          <div class="form__row">
+            <label for="notes">Anything we should know? <small>(optional)</small></label>
+            <textarea id="notes" name="notes" rows="3" maxlength="500" placeholder="e.g. Warning light on, squeaking when braking, kms since last service…"></textarea>
+          </div>
           <input type="text" name="company" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
           <p class="form__error" id="form-error" role="alert" hidden></p>
           <button type="submit" class="btn btn--primary btn--block btn--lg" id="submit-btn">Confirm booking</button>

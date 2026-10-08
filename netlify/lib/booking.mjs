@@ -153,11 +153,14 @@ function demoBusy(days) {
 
 // ---------- Availability ----------
 
+/** First bookable day: tomorrow unless same-day bookings are switched on. */
+export const firstBookableYmd = () => (config.sameDayBookings ? todayYmd() : addDays(todayYmd(), 1));
+
 /**
  * Free start times per day for a service.
  * Returns [{ date: "2026-10-16", slots: ["08:00", "08:30", ...] }, ...]
  */
-export async function getAvailability(service, fromYmd = todayYmd(), numDays = config.daysAhead) {
+export async function getAvailability(service, fromYmd = firstBookableYmd(), numDays = config.daysAhead) {
   const days = Array.from({ length: numDays }, (_, i) => addDays(fromYmd, i));
   const open = days.filter((ymd) => config.hours[weekdayKey(ymd)]);
   if (!open.length) return days.map((date) => ({ date, slots: [] }));
